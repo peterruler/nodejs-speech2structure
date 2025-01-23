@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ärztlicher Diagnose Rekorder</title>
+</head>
+<body>
+    <h1>Aufnahme Diagnose</h1>
+    <p> prompt=Kategorisieren Sie den folgenden Text nach Vorname, Nachname, Alter, Geschlecht, Blutdruck, Körpertemperatur und weiteren Vitalparametern, Diagnose Nummer eins bis Nummer fünf
+    </p>
+    <button id="recordButton">Aufnahme</button>
+    <button id="stopButton" disabled>Stop</button>
+    <audio id="audioPlayback" controls></audio>
+    <div id="results">
+        <h2>Transkription</h2>
+        <p id="transcription"></p>
+        <h2>Patienten Daten</h2>
+        <ul id="categories"></ul>
+    </div>
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById('recordButton').addEventListener('click', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                document.getElementById('audioPlayback').src = audioUrl;
+
+                const formData = new FormData();
+                // const audioFilename = `${crypto.randomUUID()}.mp3`;
+                const audioFilename = `audio.mp3`;
+                formData.append('audio', audioBlob, audioFilename);
+                formData.append('filename', audioFilename);
+
+                const response = await fetch('/process_audio', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                document.getElementById('transcription').innerText = result.transcription;
+
+                const categories = JSON.parse(result.categories);
+                const categoriesList = document.getElementById('categories');
+                categoriesList.innerHTML = '';
+
+                for (const [key, value] of Object.entries(categories)) {
+                    if (key === 'Diagnosetext') {
+                        for (const [diagKey, diagValue] of Object.entries(value)) {
+                            if (diagValue) {
+                                const listItem = document.createElement('li');
+                                listItem.innerText = `Diagnose ${diagKey}: ${diagValue}`;
+                                categoriesList.appendChild(listItem);
+                            }
+                        }
+                    } else if (typeof value === 'object' && value !== null) {
+                        for (const [subKey, subValue] of Object.entries(value)) {
+                            const listItem = document.createElement('li');
+                            listItem.innerText = `${subKey.charAt(0).toUpperCase() + subKey.slice(1)}: ${subValue}`;
+                            categoriesList.appendChild(listItem);
+                        }
+                    } else {
+                        const listItem = document.createElement('li');
+                        listItem.innerText = `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`;
+                        categoriesList.appendChild(listItem);
+                    }
+                }
+            };
+
+            document.getElementById('recordButton').disabled = true;
+            document.getElementById('stopButton').disabled = false;
+        });
+
+        document.getElementById('stopButton').addEventListener('click', () => {
+            mediaRecorder.stop();
+            document.getElementById('recordButton').disabled = false;
+            document.getElementById('stopButton').disabled = true;
+        });
+    </script>
+</body>
+</html>
