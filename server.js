@@ -61,7 +61,7 @@ app.post('/process_audio', async (req, res) => {
         console.log('Transcription:', text);
 
         // Use the transcription result to generate categories
-        const prompt = `Kategorisieren Sie den folgenden Text in ein einfaches gültiges JSON-Objekt, das Folgendes enthält: Vorname, Nachname, Alter, Geschlecht,  Blutdruck, Körpertemperatur und weitere Vitalparameter, Diagnosetext mit Nummer 1. bis Nummer 5. Diagnose als Javascript Array mit Key 1. etc. (numerischer Wert mit Punkt) Value: die Diagnose:\n\n${text}`;
+        const prompt = `Kategorisieren Sie den folgenden Text in ein einfaches gültiges JSON-Objekt ohne js multiline Kommetare und ohne json keyword, das Folgendes enthält: Vorname, Nachname, Alter, Geschlecht,  Blutdruck, Körpertemperatur und weitere Vitalparameter, Diagnosetext mit Nummer 1. bis Nummer 5. Diagnose als Javascript Array mit Key 1. etc. (numerischer Wert mit Punkt) Value: die Diagnose:\n\n${text}`;
         const gptResponse = await openai.createChatCompletion({
             model: 'gpt-4o-mini',
             messages: [
