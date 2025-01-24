@@ -91,5 +91,4 @@ temp/
 *.temp
 
 # custom
-*,
-.mp3
+*.mp3
