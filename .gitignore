@@ -89,3 +89,7 @@ tmp/
 temp/
 *.tmp
 *.temp
+
+# custom
+*,
+.mp3
