@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ärztlicher Diagnose Rekorder</title>
+    <link rel="shortcut icon" href="./favicon.png">
+    <style>
+        body {
+            background-color: #6b6767;
+            color: white;
+        }
+        .blink_me {
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% {
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 <body>
     <h1>Aufnahme Diagnose</h1>
@@ -18,6 +34,7 @@
         <h2>Patienten Daten</h2>
         <ul id="categories"></ul>
     </div>
+    <script src="./preloader.js"></script>
     <script>
         let mediaRecorder;
         let audioChunks = [];
@@ -32,6 +49,7 @@
             };
 
             mediaRecorder.onstop = async () => {
+                addLoader();
                 const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
                 const audioUrl = URL.createObjectURL(audioBlob);
                 document.getElementById('audioPlayback').src = audioUrl;
@@ -45,9 +63,13 @@
                 const response = await fetch('/process_audio', {
                     method: 'POST',
                     body: formData
-                });
+                })
 
                 const result = await response.json();
+
+                if (result.transcription != '') {
+                    removeLoader();
+                }
                 document.getElementById('transcription').innerText = result.transcription;
 
                 const categories = JSON.parse(result.categories);
@@ -76,7 +98,6 @@
                     }
                 }
             };
-
             document.getElementById('recordButton').disabled = true;
             document.getElementById('stopButton').disabled = false;
         });
