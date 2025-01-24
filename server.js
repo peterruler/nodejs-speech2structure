@@ -75,13 +75,22 @@ app.post('/process_audio', async (req, res) => {
             { role: 'system', content: 'Sie sind ein hilfreicher Assistent, der auf medizinische Kategorisierung spezialisiert ist.' },
             { role: 'user', content: prompt },
         ],
-        max_tokens: 150,
+        max_tokens: 200,
     });
 
     const categories = gptResponse.choices[0].message.content.trim();
     console.log('Categories:', categories);
 
     res.json({ transcription: text, categories: categories });
+
+    // Remove the audio file after inference
+    fs.unlink(audioPath, (err) => {
+        if (err) {
+            console.error('Error removing audio file:', err);
+        } else {
+            console.log('Audio file removed successfully.');
+        }
+    });
 });
 
 app.listen(port, () => {
