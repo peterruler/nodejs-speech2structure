@@ -9,8 +9,8 @@
 
 1. Klone das Repository:
     ```sh
-    git clone https://github.com/yourusername/speech2structure.git
-    cd speech2structure
+    git clone https://github.com/yourusername/nodejs-speech2structure.git
+    cd nodejs-speech2structure
     ```
 
 2. Installiere die benötigten Pakete:
