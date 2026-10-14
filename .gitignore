@@ -92,3 +92,10 @@ temp/
 
 # custom
 *.mp3
+.env.*
+!.env.example
+*.tsbuildinfo
+out/
+
+.env
+.env.local
